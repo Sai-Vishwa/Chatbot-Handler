@@ -27,6 +27,19 @@ const setRequestBodydata = (proxyReq, req, res) => {
     }
   });
 
+  const botProxy = createProxyMiddleware({
+    target: 'http://localhost:4004/bot',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/bot': ''
+    },
+    on: {
+      proxyReq: (proxyReq, req, res) => setRequestBodydata(proxyReq, req, res),
+      proxyRes: (proxyRes, req, res) => responseHandle(proxyRes, req, res),
+      error: (err, req, res) => proxyError(err, req, res)
+    }
+  });
+
   module.exports = { 
-    authProxy
+    authProxy, botProxy
   }
