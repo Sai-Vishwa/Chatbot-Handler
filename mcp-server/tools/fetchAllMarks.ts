@@ -1,9 +1,10 @@
 import { error } from "console";
 import connectionSlave from "../dbConnection/connector_slave";
 
-export function fetchAllMArks() {
-  return {
+export const fetchAllMarks =  {
+  
     name: "fetchAllMarks",
+
     description: "Returns marks of all the students",
 
     input_schema: {
@@ -72,5 +73,4 @@ export function fetchAllMArks() {
             }
         });
     }
-  };
 }
