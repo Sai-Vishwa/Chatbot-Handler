@@ -24,10 +24,9 @@ async function input(req , res) {
         }
     }, 3000);
 
-    // if client closes the connection before finishing
     req.on('close', () => {
         clearInterval(intervalId);
-        console.log('🔌 Client disconnected');
+        console.log('Client disconnected');
     });
 }
 
