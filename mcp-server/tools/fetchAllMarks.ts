@@ -1,5 +1,5 @@
 import { error } from "console";
-import connectionSlave from "../dbConnection/connector_slave";
+import { connectSlave } from "../dbConnection/connector_slave";
 
 export const fetchAllMarks =  {
   
@@ -49,6 +49,7 @@ export const fetchAllMarks =  {
 
     invoke: async (input: any) => {
         const { session } = input as { session : string };
+        const connectionSlave = await connectSlave();
         await connectionSlave.query(`SELECT type FROM SESSION WHERE session_id=${session}`, (err: Error | null, results: any) => {
             if(err){
                 return {error:err.message}
