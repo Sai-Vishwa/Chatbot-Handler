@@ -10,9 +10,11 @@ export const fetchAllMarks =  {
     input_schema: {
       type: "object",     
       properties: {
-        session: { type: "string", description: "this is the user session stored in the cookie" }
+        // session: { type: "string", description: "this is the user session stored in the cookie" }
       },     
-      required: ["session"]      
+      required: [
+        // "session"
+    ]      
     },
 
     output_schema: {
@@ -47,21 +49,21 @@ export const fetchAllMarks =  {
     },
 
 
-    invoke: async (input: any) => {
-        const { session } = input as { session : string };
+    invoke: async () => {
+        // const { session } = input as { session : string };
         const connectionSlave = await connectSlave();
-        await connectionSlave.query(`SELECT type FROM SESSION WHERE session_id=${session}`, (err: Error | null, results: any) => {
-            if(err){
-                return {error:err.message}
-            }
-            else if(results.length !== 1){
-                return {no_access:"Wrong session... Login first"}
-            }
-            else if(results[0]==="student"){
-                return {no_access:"Students can see only their marks"}
-            }
+        // await connectionSlave.query(`SELECT type FROM SESSION WHERE session_id=${session}`, (err: Error | null, results: any) => {
+        //     if(err){
+        //         return {error:err.message}
+        //     }
+        //     else if(results.length !== 1){
+        //         return {no_access:"Wrong session... Login first"}
+        //     }
+        //     else if(results[0]==="student"){
+        //         return {no_access:"Students can see only their marks"}
+        //     }
 
-        })
+        // })
         await connectionSlave.query('SELECT * FROM MARKS', (err: Error | null, results: any) => {
             if(err){
                 return {error:err.message}

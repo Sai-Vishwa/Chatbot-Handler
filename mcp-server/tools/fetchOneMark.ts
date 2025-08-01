@@ -49,18 +49,18 @@ export const fetchOneMark = {
     invoke: async (input: any) => {
         const { session , roll_no } = input as { session : string , roll_no : number};
         const connectionSlave = await connectSlave();
-        await connectionSlave.query(`SELECT roll_no FROM SESSION WHERE session_id=${session}`, (err: Error | null, results: any) => {
-            if(err){
-                return {error:err.message}
-            }
-            else if(results.length !== 1){
-                return {no_access:"Wrong session... Login first"}
-            }
-            else if(results[0]!=roll_no){
-                return {no_access:"Students can see only their marks"}
-            }
+        // await connectionSlave.query(`SELECT roll_no FROM SESSION WHERE session_id=${session}`, (err: Error | null, results: any) => {
+        //     if(err){
+        //         return {error:err.message}
+        //     }
+        //     else if(results.length !== 1){
+        //         return {no_access:"Wrong session... Login first"}
+        //     }
+        //     else if(results[0]!=roll_no){
+        //         return {no_access:"Students can see only their marks"}
+        //     }
 
-        })
+        // })
         await connectionSlave.query(`SELECT * FROM MARKS WHERE roll_no=${roll_no}`, (err: Error | null, results: any) => {
             if(err){
                 return {error:err.message}
