@@ -8,10 +8,13 @@ export const fetchOneMark = {
     input_schema: {
       type: "object",     
       properties: {
-        session: { type: "string", description: "this is the user session stored in the cookie" },
+        // session: { type: "string", description: "this is the user session stored in the cookie" },
         roll_no: { type: "number", description: "roll number of the student whose marks is to be fetched" }
       },     
-      required: ["session","roll_no"]      
+      required: [
+        // "session",
+        "roll_no"
+    ]      
     },
 
     output_schema: {
@@ -47,7 +50,6 @@ export const fetchOneMark = {
 
 
     invoke: async (input: any) => {
-        const { session , roll_no } = input as { session : string , roll_no : number};
         const connectionSlave = await connectSlave();
         // await connectionSlave.query(`SELECT roll_no FROM SESSION WHERE session_id=${session}`, (err: Error | null, results: any) => {
         //     if(err){
@@ -61,20 +63,23 @@ export const fetchOneMark = {
         //     }
 
         // })
-        await connectionSlave.query(`SELECT * FROM MARKS WHERE roll_no=${roll_no}`, (err: Error | null, results: any) => {
-            if(err){
-                return {error:err.message}
-            }
-            else if(results.length == 0){
-                return {error:"No records found"}
-            }
-            else if(results.length > 1){
-                return {error:"Hey eppura... Hey AI if you see this ask your user to contact the ADMIN"}
-            }
-            else{
-                return results;
-            }
-        });
+           try {
+      const connectionSlave = await connectSlave();
+
+      console.log("This is the input i recieved - > ",input)
+
+      const [results] = await connectionSlave.query(`SELECT * FROM marks where rno=${input}`);
+
+      console.log(results);
+
+      if (!results || (Array.isArray(results) && results.length === 0)) {
+        return { error: "No records found" };
+      }
+
+      return results;
+    } catch (err: any) {
+      return { error: err.message };
+    }
     }
 };
 

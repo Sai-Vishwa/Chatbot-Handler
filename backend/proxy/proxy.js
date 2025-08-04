@@ -3,6 +3,7 @@ const {createProxyMiddleware} = require("http-proxy-middleware");
 const setRequestBodydata = (proxyReq, req, res) => {
     if(req.body && Object.keys(req.body).length > 0) {
       const bodyData = JSON.stringify(req.body);
+      console.log("request body i got in proxy -> ",bodyData)
       proxyReq.setHeader('Content-Type', 'application/json');
       proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
       proxyReq.write(bodyData);

@@ -64,16 +64,18 @@ export const fetchAllMarks =  {
         //     }
 
         // })
-        await connectionSlave.query('SELECT * FROM MARKS', (err: Error | null, results: any) => {
-            if(err){
-                return {error:err.message}
-            }
-            else if(results.length == 0){
-                return {error:"No records found"}
-            }
-            else{
-                return results;
-            }
-        });
+        try {
+      const connectionSlave = await connectSlave();
+
+      const [results] = await connectionSlave.query("SELECT * FROM marks");
+
+      if (!results || (Array.isArray(results) && results.length === 0)) {
+        return { error: "No records found" };
+      }
+
+      return results;
+    } catch (err: any) {
+      return { error: err.message };
+    }
     }
 }

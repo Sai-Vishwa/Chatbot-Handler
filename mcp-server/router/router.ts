@@ -33,6 +33,8 @@ router.post("/invoke", async (req, res) => {
   console.log("hey invoke request is getting called");
   const { tool_name, input } = req.body;
 
+  console.log("The request body is as follows - ",req.body)
+
   if (tool_name === "fetchAllMarks") {
     const output = await fetchAllMarks.invoke();
     return res.json({ output });

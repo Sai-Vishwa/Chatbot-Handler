@@ -9,7 +9,7 @@ const asyncHandler = (fn) => (req, res, next) => {
   };
 
   router.post('/input', asyncHandler(async (req, res) => {
-    console.log("im in router");
+    console.log("im in router and this is the request i got -> ",req.body);
     await input(req,res);
   }));
 

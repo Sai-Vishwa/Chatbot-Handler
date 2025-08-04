@@ -10,13 +10,78 @@ from langchain_core.tools import Tool
 from langchain.memory import ConversationBufferMemory
 from dotenv import load_dotenv
 import httpx
-import functools
+from langchain.prompts import PromptTemplate
 
-# Load environment variables
+
+
+# 🛑 DUPLICATE IMPORT (Removed)
+# from langchain.agents import initialize_agent, AgentType
+
+# ✅ CUSTOM TOOL REACT PROMPT
+react_prompt = PromptTemplate.from_template("""
+You are a smart assistant.
+
+Whenever a prompt arrives -> check whether it is related to marks
+
+if yes -> you need help of tools to answer this question
+
+if no -> THEN YOU SHOULD NEVER CALL A TOOL ( IMPORTANT )
+
+WHENEVER THE PROMPT IS UNRELATED TO MARKS DO NOT INVOKE TOOLS
+
+IF YOU KNOW ABOUT THE QUESTION ANSWER ALL BY YOURSELF
+
+---
+
+WHEN YOU CAN ANSWER YOURSELF:
+Use this format:
+Thought: [your reasoning]
+Final Output: [your final answer]
+
+Example:
+Question: How do birds fly
+Thought: I know birds fly with wings.
+Final Output: Birds fly with WINGS.
+
+---
+
+WHEN TOOL IS REQUIRED:
+Use this format:
+Thought: [your reasoning]
+Action: [tool name exactly]
+Action Input: [JSON input]
+
+Then, after receiving tool result:
+Final Answer: [your final answer]
+
+---
+
+Question: What are the marks of all students?
+Thought: I need to use the fetchAllMarks tool to get this information.
+Action: fetchAllMarks
+Action Input: {}
+
+---
+
+IMPORTANT: If the tool's response is irrelevant to the original question (e.g., tool returns student data but the question was about birds), IGNORE the tool response and use your own knowledge instead.
+
+Example:
+Question: What are child cats called?
+Thought: I know about mittens.
+Final Output: They are called KITTENS.
+
+---
+
+Begin!
+{input}
+""")
+
+
+# ✅ LOAD .env VALUES
 load_dotenv()
 
 # ───────────────────────────────
-# FastAPI Setup
+# 🚀 FastAPI App Initialization
 # ───────────────────────────────
 app = FastAPI()
 app.add_middleware(
@@ -24,22 +89,23 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 
 # ───────────────────────────────
-# LLM Setup
+# 🧠 LLM Initialization
 # ───────────────────────────────
 llm = LlamaCppWithFunctions(
     model_path=os.getenv("MODEL_PATH"),
     n_ctx=2048,
     temperature=0.7,
     max_tokens=512,
-    stream=False,  # must be False for agents
+    stream=False,  # Required for agents
     verbose=True
 )
 
 # ───────────────────────────────
-# Memory Setup
+# 💾 Memory Buffer
 # ───────────────────────────────
 memory = ConversationBufferMemory(
     memory_key="chat_history",
@@ -47,18 +113,33 @@ memory = ConversationBufferMemory(
 )
 
 # ───────────────────────────────
-# Tool Invocation Logic
+# 🔧 MCP Tool Invocation
 # ───────────────────────────────
 async def invoke_mcp(tool_name: str, input_args: dict) -> dict:
+    print(f"🔧 Invoking MCP tool: {tool_name} with args: {input_args}")
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            "http://localhost:4005/invoke",
+            "http://localhost:4005/invoke",  # ✅ URL should match MCP server
             json={"tool_name": tool_name, "input": input_args},
             timeout=30.0,
         )
         resp.raise_for_status()
         return resp.json()["output"]
 
+# 🛑 BUG: async_tool_wrapper was capturing last loop value (closure bug)
+# ✅ FIX: wrap each tool coroutine using factory function
+def make_tool(tool_name, tool_description):
+    async def async_tool_wrapper(input_args):
+        return await invoke_mcp(tool_name, input_args)
+
+    return Tool(
+        name=tool_name,
+        description=tool_description,
+        func=lambda x: "Async only",  # Fallback for sync calls (unused)
+        coroutine=async_tool_wrapper
+    )
+
+# 🔄 Load tools dynamically from MCP
 async def load_tools():
     async with httpx.AsyncClient() as client:
         resp = await client.get("http://localhost:4005/all_tools")
@@ -67,22 +148,13 @@ async def load_tools():
 
     tools = []
     for tool_meta in meta["tools"]:
-        tool_name = tool_meta["name"]
-        tool_description = tool_meta["description"]
+        tools.append(make_tool(tool_meta["name"], tool_meta["description"]))
 
-        async_tool_fn = functools.partial(invoke_mcp, tool_name)
-
-        tool = Tool(
-            name=tool_name,
-            description=tool_description,
-            func=lambda x: "Async only",
-            coroutine=async_tool_fn
-        )
-        tools.append(tool)
+    print("🧰 Tools loaded:", [tool.name for tool in tools])
     return tools
 
 # ───────────────────────────────
-# Global AgentExecutor
+# 🧠 Agent Executor Initialization
 # ───────────────────────────────
 agent_executor = None
 
@@ -90,6 +162,7 @@ agent_executor = None
 async def on_startup():
     global agent_executor
     tools = await load_tools()
+
     agent_executor = initialize_agent(
         tools=tools,
         llm=llm,
@@ -97,10 +170,13 @@ async def on_startup():
         memory=memory,
         verbose=True,
         handle_parsing_errors=True,
+        agent_kwargs={
+            "system_message": react_prompt  # ✅ Note: This works only if your model supports system_message
+        }
     )
 
 # ───────────────────────────────
-# FastAPI Models
+# 📤 Request/Response Models
 # ───────────────────────────────
 class PromptInput(BaseModel):
     prompt: str
@@ -109,16 +185,18 @@ class PromptOutput(BaseModel):
     response: str
 
 # ───────────────────────────────
-# /generate Endpoint
+# 🧪 Chat Route
 # ───────────────────────────────
 @app.post("/generate", response_model=PromptOutput)
 async def generate(req: PromptInput):
+    print("REQUEST I GOT IS  -  "+req.prompt)
     global agent_executor
     result = await agent_executor.arun(req.prompt)
+    print("📤 Agent Response:", result)
     return {"response": result}
 
 # ───────────────────────────────
-# Run app
+# ▶ Run Server
 # ───────────────────────────────
 if __name__ == "__main__":
     import uvicorn

@@ -1,5 +1,5 @@
 const express = require('express');
-
+const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
@@ -9,8 +9,10 @@ const { authProxy, basicProxy, submissionProxy, adminProxy, botProxy } = require
 
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json());
 
 app.use((req, res, next) => {
+    console.log("This is getting called -> ",req.path , "  and this is the body -> ", req.body)
     next();
   })
 

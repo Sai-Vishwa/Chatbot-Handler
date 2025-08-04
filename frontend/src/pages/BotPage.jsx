@@ -49,60 +49,70 @@ const ChatbotPage = () => {
         const res = await fetch(`http://localhost:4000/bot/input`, {
           method: "POST",
           headers: {
-            Accept: "text/event-stream",
+            "Content-Type": "application/json",
           },
           signal,
-          body: JSON.stringify({ message: userMessage })    
+          body: JSON.stringify({ prompt: userMessage })    
         });
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        while (true){
-            const { done, value } = await reader.read();
-            if (done){
-                setMessages(prev =>
-                    prev.map(msg =>
-                        msg.sender === 'bot' && msg.isWriting
-                        ? { ...msg, isWriting: false }
-                        : msg
-                    )
-                );
-                firstChunk = true;
-                setIsLoading(false);
-                break;
-            }
-            if(isLoading==true){
-                setIsLoading(false)
-            }
+        const data = await res.json();
+        const botMessage = {
+            id: Date.now() + 1,
+            text: data.result,
+            sender: 'bot',
+            timestamp: new Date(),
+            isWriting: true
+        };
+        setMessages(prev => [...prev, botMessage]);
+        setIsLoading(false)
+        // const reader = res.body.getReader();
+        // const decoder = new TextDecoder("utf-8");
+        // while (true){
+        //     const { done, value } = await reader.read();
+        //     if (done){
+        //         setMessages(prev =>
+        //             prev.map(msg =>
+        //                 msg.sender === 'bot' && msg.isWriting
+        //                 ? { ...msg, isWriting: false }
+        //                 : msg
+        //             )
+        //         );
+        //         firstChunk = true;
+        //         setIsLoading(false);
+        //         break;
+        //     }
+        //     if(isLoading==true){
+        //         setIsLoading(false)
+        //     }
 
-            const chunk = decoder.decode(value, { stream: true });
-            console.log(firstChunk + " value for the chunk - " + chunk);
-            if(firstChunk == true){
-                const botMessage = {
-                    id: Date.now() + 1,
-                    text: chunk,
-                    sender: 'bot',
-                    timestamp: new Date(),
-                    isWriting: true
-                };
-                firstChunk = false;
-                let dummy = messages;
-                dummy.push(botMessage)
-                console.log("chunk i recieved - "+ chunk + "set first chunk value now - "+ firstChunk)
-                setMessages(prev => [...prev, botMessage]);
-                console.log(dummy.length)
-            }
-            else{
-                let temp = messages;
-                setMessages(prev =>
-                    prev.map(msg =>
-                        msg.sender === 'bot' && msg.isWriting
-                        ? { ...msg, text: msg.text +" \n"+ chunk }
-                        : msg
-                    ));
-                            // alert("im here");
-                console.log("Hey can u see me");
-            }            
-        }   
+        //     const chunk = decoder.decode(value, { stream: true });
+        //     console.log(firstChunk + " value for the chunk - " + chunk);
+        //     if(firstChunk == true){
+        //         const botMessage = {
+        //             id: Date.now() + 1,
+        //             text: chunk,
+        //             sender: 'bot',
+        //             timestamp: new Date(),
+        //             isWriting: true
+        //         };
+        //         firstChunk = false;
+        //         let dummy = messages;
+        //         dummy.push(botMessage)
+        //         console.log("chunk i recieved - "+ chunk + "set first chunk value now - "+ firstChunk)
+        //         setMessages(prev => [...prev, botMessage]);
+        //         console.log(dummy.length)
+        //     }
+        //     else{
+        //         let temp = messages;
+        //         setMessages(prev =>
+        //             prev.map(msg =>
+        //                 msg.sender === 'bot' && msg.isWriting
+        //                 ? { ...msg, text: msg.text +" \n"+ chunk }
+        //                 : msg
+        //             ));
+        //                     // alert("im here");
+        //         console.log("Hey can u see me");
+        //     }            
+        // }   
     }
     catch(err){
         console.log(err);
