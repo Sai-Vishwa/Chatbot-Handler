@@ -1,19 +1,19 @@
 import { error } from "console";
-import { connectSlave } from "../dbConnection/connector_slave";
+import { connectSlave } from "../../dbConnection/connector_slave";
 
-export const fetchOneMark = {
-    name: "fetchOneMark",
-    description: "Returns marks of one student with their roll number as input",
+export const fetchAllMarks =  {
+  
+    name: "fetchAllMarks",
+
+    description: "Returns marks of all the students",
 
     input_schema: {
       type: "object",     
       properties: {
-        // session: { type: "string", description: "this is the user session stored in the cookie" },
-        roll_no: { type: "number", description: "roll number of the student whose marks is to be fetched" }
+        // session: { type: "string", description: "this is the user session stored in the cookie" }
       },     
       required: [
-        // "session",
-        "roll_no"
+        // "session"
     ]      
     },
 
@@ -49,28 +49,25 @@ export const fetchOneMark = {
     },
 
 
-    invoke: async (input: any) => {
+    invoke: async () => {
+        // const { session } = input as { session : string };
         const connectionSlave = await connectSlave();
-        // await connectionSlave.query(`SELECT roll_no FROM SESSION WHERE session_id=${session}`, (err: Error | null, results: any) => {
+        // await connectionSlave.query(`SELECT type FROM SESSION WHERE session_id=${session}`, (err: Error | null, results: any) => {
         //     if(err){
         //         return {error:err.message}
         //     }
         //     else if(results.length !== 1){
         //         return {no_access:"Wrong session... Login first"}
         //     }
-        //     else if(results[0]!=roll_no){
+        //     else if(results[0]==="student"){
         //         return {no_access:"Students can see only their marks"}
         //     }
 
         // })
-           try {
+        try {
       const connectionSlave = await connectSlave();
 
-      console.log("This is the input i recieved - > ",input)
-
-      const [results] = await connectionSlave.query(`SELECT * FROM marks where rno=${input}`);
-
-      console.log(results);
+      const [results] = await connectionSlave.query("SELECT * FROM marks");
 
       if (!results || (Array.isArray(results) && results.length === 0)) {
         return { error: "No records found" };
@@ -81,5 +78,4 @@ export const fetchOneMark = {
       return { error: err.message };
     }
     }
-};
-
+}
