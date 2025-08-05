@@ -2,21 +2,21 @@ import express from "express";
 import bodyParser from "body-parser";
 import router from "./router/router";
 
-// import { McpServer } from "@modelcontextprotocol/sdk/server/mcp"
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { version } from "os";
 // import { connectSlave } from "./dbConnection/connector_slave";
 
 
-// const mcpServer = new McpServer({
-//   name: "Marks table server",
-//   version: "1.0.0",
-//   capabilities:{
-//     resources:{},
-//     tools:{}
-//   }
-// })
+const mcpServer = new McpServer({
+  name: "Marks_table_server",
+  version: "1.0.0",
+  capabilities:{
+    resources:{},
+    tools:{}
+  }
+})  
 
 // mcpServer.tool(
 //   "fetchAllMarks",

@@ -1,6 +1,6 @@
 import express from "express";
-import { fetchAllMarks } from "../tools/fetchAllMarks";
-import { fetchOneMark } from "../tools/fetchOneMark";
+import { fetchAllMarks } from "../functions/fetchAllMarks";
+import { fetchOneMark } from "../functions/fetchOneMark";
 
 const router = express.Router();
 
