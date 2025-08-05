@@ -1,10 +1,6 @@
 // import express from "express";
-
-
+export {};
 // const router = express.Router();
-
-
-
 // router.get("/all_tools", (_, res) => {
 //   console.log("Hey all tools request is getting called")
 //   res.json({
@@ -26,25 +22,18 @@
 //     ]
 //   });
 // });
-
-
 // router.post("/invoke", async (req, res) => {
 //   console.log("hey invoke request is getting called");
 //   const { tool_name, input } = req.body;
-
 //   console.log("The request body is as follows - ",req.body)
-
 //   if (tool_name === "fetchAllMarks") {
 //     const output = await fetchAllMarks.invoke();
 //     return res.json({ output });
 //   }
-
 //   else if (tool_name === "fetchOneMark") {
 //     const output = await fetchOneMark.invoke(input);
 //     return res.json({ output });
 //   }
-
 //   return res.status(400).json({ error: "Tool not found" });
 // });
-
 // export default router;

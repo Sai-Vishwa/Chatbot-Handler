@@ -1,26 +1,30 @@
-import { connectSlave } from "../../dbConnection/connector_slave";
+import { isErrored } from "stream";
+import { connectSlave } from "../dbConnection/connector_slave.js";
+import  { Marks_Response_Format,Mark } from "../formats/marksFormat.js";
+import fetchMarksInARangeFormatter from "../formatters/fetchMarksInARangeFormatter.js";
+import { fetchOneMarkFormatter } from "../formatters/fetchOneMarkFormatter.js";
 
-async function fetchOneMark<T>(roll_no : string): Promise<T | null> {
+async function fetchOneMarkFunction<T>(roll_no : any): Promise<Marks_Response_Format> {
 
   try {
       const connectionSlave = await connectSlave();
 
-      console.log("This is the input i recieved - > ",roll_no)
-
-      const [results] = await connectionSlave.query(`SELECT * FROM marks where rno=${roll_no}`);
-
-      console.log(results);
-
-      if (!results || (Array.isArray(results) && results.length === 0)) {
-        return { error: "No records found" } as T;
+      if(typeof roll_no != 'number') {
+        const resp : Marks_Response_Format = fetchOneMarkFormatter(true , "The required input type is a number" , []);
+        return resp as Marks_Response_Format;
       }
 
-      return results as T;  
-    } catch (err: any) {
-      return { error: err.message }as T;
+      const [results] = await connectionSlave.query(`SELECT * FROM marks where rno = ?`,[roll_no]);
+
+      const respone : Marks_Response_Format = fetchMarksInARangeFormatter(false , "" , results as Mark[]);
+      
+      return respone;
+
+    } 
+    catch (err: any) {
+      const responeError : Marks_Response_Format = fetchMarksInARangeFormatter(true , err , []);
+
+      return responeError;
     }
 }
-
-module.exports = {
-    fetchOneMark
-}
+export default fetchOneMarkFunction

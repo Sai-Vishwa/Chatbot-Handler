@@ -1,13 +1,16 @@
-import { connectSlave } from "../../dbConnection/connector_slave";
-import  { Marks_Response_Format,Mark } from "../formats/marksFormat";
-import fetchMarksInARangeFormatter from "../formatters/fetchMarksInARangeFormatter";
+import { connectSlave } from "../dbConnection/connector_slave.js";
+import  { Marks_Response_Format,Mark } from "../formats/marksFormat.js";
+import fetchMarksInARangeFormatter from "../formatters/fetchMarksInARangeFormatter.js";
 
-async function fetchMarksInARange<T>(start: number | null, end: number | null , inclusive: boolean | null): Promise<T | null> {
+async function fetchMarksInARangeFunction<T>(start: any, end: any): Promise<Marks_Response_Format> {
 
   try {
       const connectionSlave = await connectSlave();
 
-      let equal = "";
+      if((typeof start != "number" || start != null) && (typeof end != "number" || end != null)){
+        const resp : Marks_Response_Format = fetchMarksInARangeFormatter(true , "The required input type of start and end are number and inclusive is a boolean" , []);
+        return resp;
+      }
 
       if(start == null){
         start = 0 ;
@@ -17,25 +20,21 @@ async function fetchMarksInARange<T>(start: number | null, end: number | null , 
         end = 200;
       }
 
-      if(inclusive == true){
-        equal = "="
-      }
+     
 
-      const [results] = await connectionSlave.query(`SELECT * FROM marks where marks >? ? and marks <? ?`,[equal , start , equal , end]);
+      const [results] = await connectionSlave.query(`SELECT * FROM marks where marks >= ? and marks <= ?`,[start,end]);
 
 
       const respone : Marks_Response_Format = fetchMarksInARangeFormatter(false , "" , results as Mark[]);
       
-      return respone as T;
+      return respone;
 
     } 
     catch (err: any) {
       const responeError : Marks_Response_Format = fetchMarksInARangeFormatter(true , err , []);
 
-      return responeError as T;
+      return responeError;
     }
 }
 
-module.exports = {
-    fetchMarksInARange
-}
+export default fetchMarksInARangeFunction

@@ -1,4 +1,4 @@
-import { Mark , Marks_Response_Format } from "../formats/marksFormat"
+import { Mark , Marks_Response_Format } from "../formats/marksFormat.js"
 
 function fetchMarksInARangeFormatter(isError : boolean , errorMessage ?: string , response ?: Array <Mark>) : Marks_Response_Format {
 

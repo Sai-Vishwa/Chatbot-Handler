@@ -1,0 +1,12 @@
+{
+	"servers": {
+		"my-mcp-server-e6e6bb7a": {
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"~/Desktop/Chatbot-Handler/mcp-server/build/index.js"
+			]
+		}
+	},
+	"inputs": []
+}

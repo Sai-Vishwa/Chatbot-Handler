@@ -1,24 +1,24 @@
-import { connectSlave } from "../../dbConnection/connector_slave";
+import { connectSlave } from "../dbConnection/connector_slave.js";
+import  { Marks_Response_Format,Mark } from "../formats/marksFormat.js";
+import fetchMarksInARangeFormatter from "../formatters/fetchMarksInARangeFormatter.js";
 
-async function fetchAllMarks<T>(): Promise<T | null> {
+async function fetchAllMarksFunction<T>(): Promise<Marks_Response_Format>{
 
   try {
       const connectionSlave = await connectSlave();
 
       const [results] = await connectionSlave.query(`SELECT * FROM marks`);
 
-      console.log(results);
 
-      if (!results || (Array.isArray(results) && results.length === 0)) {
-        return { error: "No records found" } as T;
-      }
+      const respone : Marks_Response_Format = fetchMarksInARangeFormatter(false , "" , results as Mark[]);
+      
+      return respone as Marks_Response_Format;
 
-      return results as T;  
-    } catch (err: any) {
-      return { error: err.message }as T;
+    } 
+    catch (err: any) {
+      const responeError : Marks_Response_Format = fetchMarksInARangeFormatter(true , err , []);
+
+      return responeError as Marks_Response_Format;
     }
 }
-
-module.exports = {
-    fetchAllMarks
-}
+export default fetchAllMarksFunction;

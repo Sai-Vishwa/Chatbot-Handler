@@ -4,19 +4,25 @@ import mysql, { Connection } from 'mysql2/promise';
 import path from 'path';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+dotenv.config({ path: resolve(__dirname, '..', '.env') });
 
 let connectionMaster: Connection;
 
-async function connectMaster() {
+async function connectSlave() {
   try {
     connectionMaster = await mysql.createConnection({
       host: 'localhost',
       user: 'root',
       password: process.env.PASSWORD,
       database: process.env.DATABASE,
-      socketPath: process.env.SOCKETPATH_MASTER,
-      port: 3307,
+      socketPath: process.env.SOCKETPATH_SLAVE,
+      port: 3308,
     });
 
     console.log('✅ Connected to MySQL master with thread ID:', connectionMaster.threadId);
@@ -32,4 +38,4 @@ async function connectMaster() {
   }
 }
 
-export { connectMaster };
+export { connectSlave };
