@@ -1,6 +1,6 @@
-import { Marks_Response_Format } from "../formats/marksFormat.js";
+import { Marks_Read_Response_Format } from "../../formats/readFornat/marksReadFormat.js";
 
-function MarksJsonToStringConverter(value : Marks_Response_Format) : string{
+function MarksJsonToStringConverter(value : Marks_Read_Response_Format) : string{
 
     if(value.result.length == 0 ){
         return "No Data available"

@@ -4,11 +4,11 @@ interface Mark {
   marks?: number;
 }
 
-interface Marks_Response_Format {
+interface Marks_Read_Response_Format {
   isErrorResponse: boolean;
   errorMessage?: string;
   result: Mark[];
 }
 
-export { Marks_Response_Format , Mark } 
+export { Marks_Read_Response_Format , Mark } 
 

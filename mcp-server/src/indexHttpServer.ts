@@ -1,11 +1,11 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod";
-import fetchAllMarksFunction from "./functions/fetchAllMarksFuction.js";
-import { Marks_Response_Format } from "./formats/marksFormat.js";
-import MarksJsonToStringConverter from "./formatters/MarksJsonToStringConverter.js";
-import fetchOneMarkFunction from "./functions/fetchOneMarkFunction.js";
-import fetchMarksInARangeFunction from "./functions/fetchMarksInARangeFunction.js";
+import fetchAllMarksFunction from "./functions/readFunctions/fetchAllMarksFuction.js";
+import { Marks_Read_Response_Format } from "./formats/readFornat/marksReadFormat.js";
+import MarksJsonToStringConverter from "./formatters/readConvertor/MarksJsonToStringConverter.js";
+import fetchOneMarkFunction from "./functions/readFunctions/fetchOneMarkFunction.js";
+import fetchMarksInARangeFunction from "./functions/readFunctions/fetchMarksInARangeFunction.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import express from "express";
@@ -28,7 +28,7 @@ mcpServer.tool(
     i : z.object({}).optional().describe("this is completely optional")
   },
   async({i}) => {
-    const resp : Marks_Response_Format = await fetchAllMarksFunction();
+    const resp : Marks_Read_Response_Format = await fetchAllMarksFunction();
 
     if(resp.isErrorResponse){
       return {
@@ -63,7 +63,7 @@ mcpServer.tool(
   roll_no: z.number().describe("roll number of the student whose marks is to be fetched")
   },
   async({roll_no}) => {
-    const resp : Marks_Response_Format = await fetchOneMarkFunction(roll_no);
+    const resp : Marks_Read_Response_Format = await fetchOneMarkFunction(roll_no);
 
     if(resp.isErrorResponse){
       return {
@@ -99,7 +99,7 @@ mcpServer.tool(
     end:   z.number().describe("maximum ending mark").optional()
   },
   async({start , end}) => {
-    const resp : Marks_Response_Format = await fetchMarksInARangeFunction(start , end);
+    const resp : Marks_Read_Response_Format = await fetchMarksInARangeFunction(start , end);
 
     if(resp.isErrorResponse){
       return {
