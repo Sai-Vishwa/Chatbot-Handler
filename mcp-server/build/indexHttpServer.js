@@ -1,12 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import fetchAllMarksFunction from "./functions/fetchAllMarksFuction.js";
-import MarksJsonToStringConverter from "./formatters/MarksJsonToStringConverter.js";
-import fetchOneMarkFunction from "./functions/fetchOneMarkFunction.js";
-import fetchMarksInARangeFunction from "./functions/fetchMarksInARangeFunction.js";
+import fetchAllMarksFunction from "./functions/readFunctions/fetchAllMarksFuction.js";
+import MarksJsonToStringConverter from "./formatters/readConvertor/MarksJsonToStringConverter.js";
+import fetchOneMarkFunction from "./functions/readFunctions/fetchOneMarkFunction.js";
+import fetchMarksInARangeFunction from "./functions/readFunctions/fetchMarksInARangeFunction.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express from "express";
 import cors from "cors";
+import router from "./router/router.js";
 const mcpServer = new McpServer({
     name: "Marks_table_server_2",
     version: "1.0.0",
@@ -98,6 +99,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use(router);
 const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined
 });

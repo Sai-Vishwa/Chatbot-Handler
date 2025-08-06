@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Moon, Sun } from 'lucide-react';
+import Cookie from 'js-cookie';
 
 // TypeScript interfaces
 interface LoginCredentials {
@@ -192,8 +193,17 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise<void>(resolve => setTimeout(resolve, 1000));
-      console.log('Login attempted with:', credentials);
+      const res = await fetch(`http://localhost:4006/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({uname: credentials.username, password: credentials.password}),    
+        });
+        const data = await res.json();
+        if(data.msg){
+          
+        }
     } catch (error) {
       console.error('Login failed:', error);
     } finally {

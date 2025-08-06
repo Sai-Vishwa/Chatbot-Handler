@@ -1,39 +1,17 @@
-// import express from "express";
-export {};
-// const router = express.Router();
-// router.get("/all_tools", (_, res) => {
-//   console.log("Hey all tools request is getting called")
-//   res.json({
-//     schema_version: "v1",
-//     name: "Marks MCP Server",
-//     tools: [
-//       {
-//         name: fetchAllMarks.name,
-//         description: fetchAllMarks.description,
-//         input_schema: fetchAllMarks.input_schema,
-//         output_schema: fetchAllMarks.output_schema
-//       },
-//       {
-//         name: fetchOneMark.name,
-//         description: fetchOneMark.description,
-//         input_schema: fetchOneMark.input_schema,
-//         output_schema: fetchOneMark.output_schema
-//       }
-//     ]
-//   });
-// });
-// router.post("/invoke", async (req, res) => {
-//   console.log("hey invoke request is getting called");
-//   const { tool_name, input } = req.body;
-//   console.log("The request body is as follows - ",req.body)
-//   if (tool_name === "fetchAllMarks") {
-//     const output = await fetchAllMarks.invoke();
-//     return res.json({ output });
-//   }
-//   else if (tool_name === "fetchOneMark") {
-//     const output = await fetchOneMark.invoke(input);
-//     return res.json({ output });
-//   }
-//   return res.status(400).json({ error: "Tool not found" });
-// });
-// export default router;
+import express from 'express';
+import login from '../login/login.js';
+import displayAvailableTools from '../displayTools/displayAvailableTools.js';
+const router = express.Router();
+const asyncHandler = (fn) => {
+    return (req, res, next) => {
+        Promise.resolve(fn(req, res, next)).catch(next);
+    };
+};
+router.post('/login', asyncHandler(async (req, res) => {
+    console.log("im in router and this is the request i got -> ", req.body);
+    await login(req, res);
+}));
+router.post('/display-tools', asyncHandler(async (req, res) => {
+    await displayAvailableTools(req, res);
+}));
+export default router;
