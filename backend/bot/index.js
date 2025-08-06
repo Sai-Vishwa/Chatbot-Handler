@@ -18,7 +18,9 @@ app.use((req, res, next) => {
 
 app.get('/', (req, res) => {
   res.send('Backend is running!');
+
 });
+
 
 app.use("/bot",router)
 

@@ -3,13 +3,9 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
-
-// Get __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-// Load .env from the root of the project
-dotenv.config({ path: resolve(__dirname, '..', '..', '.env') });
+dotenv.config({ path: resolve(__dirname, '..','..', '.env') });
 let connectionMaster;
 async function connectSlave() {
     try {

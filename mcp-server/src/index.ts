@@ -133,7 +133,7 @@ mcpServer.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await mcpServer.connect(transport);
-  console.error("Weather MCP Server running on stdio");
+  console.error("MCP Server running on stdio");
 }
 
 main().catch((error) => {

@@ -97,7 +97,7 @@ mcpServer.tool("fetch_Marks_In_A_Range", "Returns marks of the students whose ma
 async function main() {
     const transport = new StdioServerTransport();
     await mcpServer.connect(transport);
-    console.error("Weather MCP Server running on stdio");
+    console.error("MCP Server running on stdio");
 }
 main().catch((error) => {
     console.error("Fatal error in main():", error);
