@@ -11,7 +11,7 @@ router.post('/login', asyncHandler(async (req, res) => {
     console.log("im in router and this is the request i got -> ", req.body);
     await login(req, res);
 }));
-router.post('/display-tools', asyncHandler(async (req, res) => {
+router.post('/fetch-tools', asyncHandler(async (req, res) => {
     await displayAvailableTools(req, res);
 }));
 export default router;

@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Moon, Sun, Plus, Settings, Shield, Unlock, Lock } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
+// import { data } from 'react-router-dom';
 
 // TypeScript interfaces
 interface Tool {
@@ -16,8 +17,10 @@ interface Tool {
 }
 
 interface BackendResponse {
-  available_tools: Tool[];
-  unavailable_tools: Tool[];
+  msg?: string;
+  available_tools?: Tool[];
+  unavailable_tools?: Tool[];
+  err?: string;
 }
 
 interface Theme {
@@ -32,22 +35,7 @@ interface ToolCardProps {
 }
 
 // Mock backend response
-const mockBackendData: BackendResponse = {
-  available_tools: [
-    { id: '1', name: 'fetch_marks_of_all_students', description: 'Retrieve academic records for all enrolled students' },
-    { id: '2', name: 'create_a_student', description: 'Add new student to the system' },
-    { id: '3', name: 'delete_student_record', description: 'Remove student data from database' },
-    { id: '4', name: 'send_notification_to_parents', description: 'Send automated messages to parent contacts' },
-    { id: '5', name: 'export_student_data', description: 'Generate downloadable student reports' },
-  ],
-  unavailable_tools: [
-    { id: '6', name: 'update_student_details', description: 'Modify existing student information' },
-    { id: '7', name: 'generate_report_card', description: 'Create comprehensive academic reports' },
-    { id: '8', name: 'calculate_grade_averages', description: 'Compute statistical grade analysis' },
-    { id: '9', name: 'backup_database', description: 'Create system backup copies' },
-    { id: '10', name: 'schedule_exam_reminder', description: 'Automate examination notifications' },
-  ]
-};
+
 
 // Custom hook for theme management
 const useTheme = (): [Theme, () => void] => {
@@ -165,7 +153,11 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, count, icon, description }
 
 // Main tools page component
 const ToolsPage: React.FC = () => {
-  const [backendData, setBackendData] = useState<BackendResponse>(mockBackendData);
+  const [backendData, setBackendData] = useState<BackendResponse>({
+    available_tools: [],
+    unavailable_tools: [],
+    msg: ""
+  });
   const [theme, toggleTheme] = useTheme();
   const [isCreatingServer, setIsCreatingServer] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("available");
@@ -192,13 +184,11 @@ const ToolsPage: React.FC = () => {
           toast.error(data.err);
         }
         else{
-
           setBackendData(data);}
     } catch (error : any) {
       alert(error)
       console.log( JSON.stringify(error))
     } 
-      setBackendData(mockBackendData);
     };
     loadData();
   }, []);

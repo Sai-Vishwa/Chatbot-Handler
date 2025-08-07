@@ -20,7 +20,7 @@ const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => P
     await login(req,res);
   }));
 
-  router.post('/display-tools', asyncHandler(async (req : Request, res : Response) => {
+  router.post('/fetch-tools', asyncHandler(async (req : Request, res : Response) => {
     await displayAvailableTools(req,res);
   }));
 
