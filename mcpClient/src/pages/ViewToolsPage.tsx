@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Moon, Sun, Plus, Settings, Shield, Unlock, Lock, Search, Filter } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Moon, Sun, Plus, Settings, Shield, Unlock, Lock, Search, Filter, X, Check, Server } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { toast, Toaster } from 'sonner';
 
@@ -30,7 +31,8 @@ interface ToolCardProps {
   tool: Tool;
   isAvailable: boolean;
   theme: Theme;
-  onAddTool: (toolId: string) => void;
+  isSelected: boolean;
+  onToggleTool: (toolId: string, isAdding: boolean) => void;
 }
 
 // Mock backend response
@@ -65,31 +67,41 @@ const useTheme = (): [Theme, () => void] => {
 };
 
 // Tool card component
-const ToolCard: React.FC<ToolCardProps> = ({ tool, isAvailable, theme, onAddTool }) => {
-  const [isAdding, setIsAdding] = useState<boolean>(false);
+const ToolCard: React.FC<ToolCardProps> = ({ tool, isAvailable, theme, isSelected, onToggleTool }) => {
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const handleAddTool = async (): Promise<void> => {
+  const handleToggleTool = async (): Promise<void> => {
     if (!isAvailable) return;
-    
-    setIsAdding(true);
+
+    setIsProcessing(true);
     try {
       await new Promise<void>(resolve => setTimeout(resolve, 800));
-      onAddTool(tool.id);
+      onToggleTool(tool.id, !isSelected);
     } finally {
-      setIsAdding(false);
+      setIsProcessing(false);
     }
   };
 
   return (
-    <Card className="group transition-all duration-200 hover:shadow-md border-border/50 flex flex-col h-full">
+    <Card className={`group transition-all duration-200 hover:shadow-md border-border/50 flex flex-col h-full ${
+      isSelected ? 'ring-2 ring-primary' : ''
+    }`}>
       <CardHeader className="pb-3 flex-1">
         <div className="space-y-3">
-          <div className="flex items-start justify-end">
-            <Badge 
-              variant={isAvailable ? "default" : "secondary"} 
+          <div className="flex items-start justify-between">
+            <div>
+              {isSelected && (
+                <Badge className="bg-primary text-primary-foreground mb-2">
+                  <Check className="w-3 h-3 mr-1" />
+                  Selected
+                </Badge>
+              )}
+            </div>
+            <Badge
+              variant={isAvailable ? "default" : "secondary"}
               className={`text-xs ${
-                isAvailable 
-                  ? "bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400" 
+                isAvailable
+                  ? "bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400"
                   : "bg-muted text-muted-foreground"
               }`}
             >
@@ -106,7 +118,7 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, isAvailable, theme, onAddTool
               )}
             </Badge>
           </div>
-          
+
           <div>
             <CardTitle className="text-sm font-mono text-foreground leading-tight break-words mb-2">
               {tool.name}
@@ -119,22 +131,24 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, isAvailable, theme, onAddTool
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-0 mt-auto">
         <Button
-          onClick={handleAddTool}
-          disabled={!isAvailable || isAdding}
+          onClick={handleToggleTool}
+          disabled={!isAvailable || isProcessing}
           size="sm"
-          variant={isAvailable ? "default" : "secondary"}
+          variant={isSelected ? "destructive" : (isAvailable ? "default" : "secondary")}
           className="w-full text-xs"
         >
-          {isAdding ? (
+          {isProcessing ? (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              Adding...
+              {isSelected ? 'Removing...' : 'Adding...'}
             </div>
           ) : (
-            isAvailable ? 'Add This Tool' : 'Access Denied'
+            isAvailable
+              ? (isSelected ? 'Remove Tool' : 'Add This Tool')
+              : 'Access Denied'
           )}
         </Button>
       </CardContent>
@@ -163,6 +177,95 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, count, icon, description }
   </Card>
 );
 
+// MCP Server Creation Modal
+interface MCPServerModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedTools: Tool[];
+  onConfirm: () => void;
+}
+
+const MCPServerModal: React.FC<MCPServerModalProps> = ({ isOpen, onClose, selectedTools, onConfirm }) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Server className="h-5 w-5" />
+            Create MCP Server
+          </DialogTitle>
+          <DialogDescription>
+            Review the selected tools that will be included in your MCP server configuration.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4">
+          {selectedTools.length === 0 ? (
+            <div className="text-center py-8">
+              <Server className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No Tools Selected</h3>
+              <p className="text-sm text-muted-foreground">
+                Please select at least one tool to create an MCP server.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="mb-4">
+                <h4 className="text-sm font-medium mb-2">
+                  Selected Tools ({selectedTools.length})
+                </h4>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {selectedTools.map((tool) => (
+                    <Card key={tool.id} className="p-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm font-mono font-medium">{tool.name}</p>
+                          {tool.description && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {tool.description}
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant="secondary" className="ml-2">
+                          <Check className="w-3 h-3 mr-1" />
+                          Selected
+                        </Badge>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-4">
+                <h5 className="text-sm font-medium mb-2">Server Configuration</h5>
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  <p>• Tools will be configured with proper access controls</p>
+                  <p>• Server will be created with default security settings</p>
+                  <p>• You can modify the configuration after creation</p>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <DialogFooter className="flex gap-2">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={onConfirm}
+            disabled={selectedTools.length === 0}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Create Server
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // Main tools page component
 const ToolsPage: React.FC = () => {
   const [backendData, setBackendData] = useState<BackendResponse>(mockBackendData);
@@ -171,34 +274,34 @@ const ToolsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("search");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedToolIds, setSelectedToolIds] = useState<string[]>([]);
+  const [showMCPModal, setShowMCPModal] = useState<boolean>(false);
   const session = Cookies.get('session');
 
   // Simulate loading data from backend
   useEffect(() => {
     const loadData = async () => {
-
-
-     try {
-      // Simulate API call
-      const res = await fetch(`http://localhost:4006/fetch-tools`, {
+      try {
+        // Simulate API call
+        const res = await fetch(`http://localhost:4006/fetch-tools`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({session : session}),    
+          body: JSON.stringify({session : session}),
         });
         const data = await res.json();
-        // console.log(JSON.stringify(data))
 
         if(data.err){
           toast.error(data.err);
         }
         else{
-          setBackendData(data);}
-    } catch (error : any) {
-      alert(error)
-      console.log( JSON.stringify(error))
-    } 
+          setBackendData(data);
+        }
+      } catch (error : any) {
+        alert(error)
+        console.log( JSON.stringify(error))
+      }
     };
     loadData();
   }, []);
@@ -209,6 +312,11 @@ const ToolsPage: React.FC = () => {
     const restrictedWithStatus = backendData.unavailable_tools.map(tool => ({ ...tool, isAvailable: false }));
     return [...availableWithStatus, ...restrictedWithStatus];
   }, [backendData]);
+
+  // Get selected tools
+  const selectedTools = useMemo(() => {
+    return allTools.filter(tool => selectedToolIds.includes(tool.id));
+  }, [allTools, selectedToolIds]);
 
   // Filter and search tools
   const filteredTools = useMemo(() => {
@@ -224,7 +332,7 @@ const ToolsPage: React.FC = () => {
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(tool => 
+      filtered = filtered.filter(tool =>
         tool.name.toLowerCase().includes(query) ||
         (tool.description && tool.description.toLowerCase().includes(query)) ||
         (tool.isAvailable ? "available" : "restricted").includes(query)
@@ -234,16 +342,29 @@ const ToolsPage: React.FC = () => {
     return filtered;
   }, [allTools, searchQuery, statusFilter]);
 
-  const handleAddTool = (toolId: string): void => {
-    console.log(`Tool ${toolId} added successfully!`);
-    // Here you would typically make an API call to add the tool
+  const handleToggleTool = (toolId: string, isAdding: boolean): void => {
+    if (isAdding) {
+      setSelectedToolIds(prev => [...prev, toolId]);
+      toast.success('Tool added to selection!');
+    } else {
+      setSelectedToolIds(prev => prev.filter(id => id !== toolId));
+      toast.success('Tool removed from selection!');
+    }
   };
 
-  const handleCreateMCPServer = async (): Promise<void> => {
+  const handleCreateMCPServer = (): void => {
+    setShowMCPModal(true);
+  };
+
+  const handleConfirmServerCreation = async (): Promise<void> => {
+    setShowMCPModal(false);
     setIsCreatingServer(true);
     try {
-      await new Promise<void>(resolve => setTimeout(resolve, 1500));
-      console.log('MCP Server creation initiated!');
+      await new Promise<void>(resolve => setTimeout(resolve, 2000));
+      toast.success(`MCP Server created successfully with ${selectedTools.length} tools!`);
+      console.log('MCP Server creation initiated with tools:', selectedTools);
+      // Reset selected tools after successful creation
+      setSelectedToolIds([]);
     } finally {
       setIsCreatingServer(false);
     }
@@ -253,11 +374,11 @@ const ToolsPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
-      theme.isDark 
-        ? 'dark bg-gray-900' 
+      theme.isDark
+        ? 'dark bg-gray-900'
         : 'bg-gray-50'
     }`}>
-        <Toaster />
+      <Toaster />
       <div className="bg-background text-foreground min-h-screen">
         {/* Header */}
         <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -266,7 +387,7 @@ const ToolsPage: React.FC = () => {
               <Settings className="mr-2 h-6 w-6" />
               <span className="font-bold text-lg">Tools Management</span>
             </div>
-            
+
             <div className="flex flex-1 items-center justify-between space-x-4 md:justify-end">
               <div className="w-full flex-1 md:w-auto md:flex-none">
                 <Button
@@ -283,11 +404,16 @@ const ToolsPage: React.FC = () => {
                     <>
                       <Plus className="mr-2 h-4 w-4" />
                       Create MCP Server
+                      {selectedToolIds.length > 0 && (
+                        <Badge className="ml-2 bg-primary-foreground text-primary">
+                          {selectedToolIds.length}
+                        </Badge>
+                      )}
                     </>
                   )}
                 </Button>
               </div>
-              
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -308,7 +434,7 @@ const ToolsPage: React.FC = () => {
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Stats Overview */}
-          <div className="grid gap-6 md:grid-cols-3 mb-12 max-w-4xl mx-auto">
+          <div className="grid gap-6 md:grid-cols-4 mb-12 max-w-5xl mx-auto">
             <StatsCard
               title="Total Tools"
               count={totalTools}
@@ -327,35 +453,54 @@ const ToolsPage: React.FC = () => {
               icon={<Shield className="h-4 w-4 text-amber-500" />}
               description="Access permission required"
             />
+            <StatsCard
+              title="Selected"
+              count={selectedToolIds.length}
+              icon={<Check className="h-4 w-4 text-blue-500" />}
+              description="Tools ready for server"
+            />
           </div>
+
+          {/* Create Server Button - Prominent placement */}
+          {selectedToolIds.length > 0 && (
+            <div className="max-w-4xl mx-auto mb-8">
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Ready to Create MCP Server</h3>
+                      <p className="text-sm text-muted-foreground">
+                        You have selected {selectedToolIds.length} tool{selectedToolIds.length !== 1 ? 's' : ''} for your MCP server configuration.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleCreateMCPServer}
+                      disabled={isCreatingServer}
+                      size="lg"
+                      className="flex items-center gap-2"
+                    >
+                      <Server className="h-4 w-4" />
+                      Create Server
+                      <Badge className="ml-1 bg-primary-foreground text-primary">
+                        {selectedToolIds.length}
+                      </Badge>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           <div className="max-w-4xl mx-auto">
             <Separator className="mb-12" />
 
             {/* Tools Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              {/* <div className="flex justify-center mb-8">
-                <TabsList className="grid grid-cols-3 max-w-[600px] w-full">
-                  <TabsTrigger value="search" className="flex items-center gap-2">
-                    <Search className="h-4 w-4" />
-                    All Tools ({totalTools})
-                  </TabsTrigger>
-                  <TabsTrigger value="available" className="flex items-center gap-2">
-                    <Unlock className="h-4 w-4" />
-                    Available ({backendData.available_tools.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="restricted" className="flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    Restricted ({backendData.unavailable_tools.length})
-                  </TabsTrigger>
-                </TabsList>
-              </div> */}
-
               <TabsContent value="search" className="mt-8">
                 <div className="mb-8 text-center">
                   <h3 className="text-2xl font-semibold mb-2">All Tools</h3>
                   <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Search and filter through all available and restricted tools.
+                    Search and filter through all available and restricted tools. Select tools to add them to your MCP server.
                   </p>
                 </div>
 
@@ -400,9 +545,9 @@ const ToolsPage: React.FC = () => {
                             : "No tools are currently available in the system."}
                         </p>
                         {(searchQuery.trim() || statusFilter !== "all") && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             className="mt-4"
                             onClick={() => {
                               setSearchQuery("");
@@ -434,86 +579,25 @@ const ToolsPage: React.FC = () => {
                           tool={tool}
                           isAvailable={tool.isAvailable}
                           theme={theme}
-                          onAddTool={handleAddTool}
+                          isSelected={selectedToolIds.includes(tool.id)}
+                          onToggleTool={handleToggleTool}
                         />
                       ))}
                     </div>
                   </>
                 )}
               </TabsContent>
-
-              <TabsContent value="available" className="mt-8">
-                <div className="mb-8 text-center">
-                  <h3 className="text-2xl font-semibold mb-2">Available Tools</h3>
-                  <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Tools you have access to and can add to your workspace.
-                  </p>
-                </div>
-                
-                {backendData.available_tools.length === 0 ? (
-                  <div className="max-w-md mx-auto">
-                    <Card>
-                      <CardContent className="flex flex-col items-center justify-center py-16">
-                        <Unlock className="h-16 w-16 text-muted-foreground mb-6" />
-                        <h3 className="text-xl font-semibold mb-3">No Available Tools</h3>
-                        <p className="text-sm text-muted-foreground text-center">
-                          There are no tools currently available to you. Contact your administrator for access.
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ) : (
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {backendData.available_tools.map((tool) => (
-                      <ToolCard
-                        key={tool.id}
-                        tool={tool}
-                        isAvailable={true}
-                        theme={theme}
-                        onAddTool={handleAddTool}
-                      />
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="restricted" className="mt-8">
-                <div className="mb-8 text-center">
-                  <h3 className="text-2xl font-semibold mb-2">Restricted Tools</h3>
-                  <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Tools that require additional permissions or access rights.
-                  </p>
-                </div>
-                
-                {backendData.unavailable_tools.length === 0 ? (
-                  <div className="max-w-md mx-auto">
-                    <Card>
-                      <CardContent className="flex flex-col items-center justify-center py-16">
-                        <Shield className="h-16 w-16 text-muted-foreground mb-6" />
-                        <h3 className="text-xl font-semibold mb-3">All Tools Available</h3>
-                        <p className="text-sm text-muted-foreground text-center">
-                          You have access to all available tools in the system.
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ) : (
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {backendData.unavailable_tools.map((tool) => (
-                      <ToolCard
-                        key={tool.id}
-                        tool={tool}
-                        isAvailable={false}
-                        theme={theme}
-                        onAddTool={handleAddTool}
-                      />
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
             </Tabs>
           </div>
         </main>
+
+        {/* MCP Server Creation Modal */}
+        <MCPServerModal
+          isOpen={showMCPModal}
+          onClose={() => setShowMCPModal(false)}
+          selectedTools={selectedTools}
+          onConfirm={handleConfirmServerCreation}
+        />
       </div>
     </div>
   );
