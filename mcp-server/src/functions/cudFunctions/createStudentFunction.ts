@@ -7,7 +7,7 @@ async function createStudentFunction<T>(student : createStudentInputFormat): Pro
   try {
       const connectionMaster = await connectMaster();
 
-      await connectionMaster.query(`INSERT INTO AUTH(name , uname , password , role) values (?,?,?,?)`, [student.name, student.uname, student.password, student.role]);
+      await connectionMaster.query(`INSERT INTO AUTH(name , uname , password , role) values (?,?,?,?)`, [student.name, student.uname, student.password, "student"]);
 
 
       const respone : createStudentResponseFormat = createStudentFormatter(false , "" , "Student added successfully");

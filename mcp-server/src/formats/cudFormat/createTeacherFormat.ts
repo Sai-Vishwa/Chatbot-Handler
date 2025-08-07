@@ -2,7 +2,6 @@ interface createTeacherInputFormat {
     name: string;
     uname: string;
     password: string;
-    role: string;
 }
 
 interface createTeacherResponseFormat {

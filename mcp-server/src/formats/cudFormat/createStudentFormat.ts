@@ -2,7 +2,6 @@ interface createStudentInputFormat {
     name: string;
     uname: string;
     password: string;
-    role: string;
 }
 
 interface createStudentResponseFormat {
