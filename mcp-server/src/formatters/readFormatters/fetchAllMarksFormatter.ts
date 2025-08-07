@@ -21,6 +21,4 @@ function fetchAllMarksFormatter(isError : boolean , errorMessage ?: string , res
     
 }
 
-module.exports = {
-    fetchAllMarksFormatter
-}
+export default fetchAllMarksFormatter;
