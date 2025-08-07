@@ -7,7 +7,7 @@ import { RequestHandler } from 'express';
 import login from '../login/login.js';
 import displayAvailableTools from '../displayTools/displayAvailableTools.js';
 
-const router =  express.Router();
+const router = Router();
 
 const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>): RequestHandler => {
   return (req, res, next) => {

@@ -1,7 +1,7 @@
-import express from 'express';
+import { Router } from 'express';
 import login from '../login/login.js';
 import displayAvailableTools from '../displayTools/displayAvailableTools.js';
-const router = express.Router();
+const router = Router();
 const asyncHandler = (fn) => {
     return (req, res, next) => {
         Promise.resolve(fn(req, res, next)).catch(next);

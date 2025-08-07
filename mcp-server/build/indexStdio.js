@@ -1,15 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+// import router from "./router/router.js";
 import fetchAllMarksFunction from "./functions/readFunctions/fetchAllMarksFuction.js";
 import MarksJsonToStringConverter from "./formatters/readConvertor/MarksJsonToStringConverter.js";
 import fetchOneMarkFunction from "./functions/readFunctions/fetchOneMarkFunction.js";
 import fetchMarksInARangeFunction from "./functions/readFunctions/fetchMarksInARangeFunction.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import express from "express";
-import cors from "cors";
-import router from "./router/router.js";
+// import { connectSlave } from "./dbConnection/connector_slave";
 const mcpServer = new McpServer({
-    name: "Marks_table_server_2",
+    name: "Marks_table_server",
     version: "1.0.0",
     capabilities: {
         resources: {},
@@ -95,24 +94,12 @@ mcpServer.tool("fetch_Marks_In_A_Range", "Returns marks of the students whose ma
         };
     }
 });
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors());
-app.use(router);
-app.post("/mcp", async (req, res) => {
-    const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: undefined
-    });
-    res.on("close", () => {
-        transport.close();
-    });
+async function main() {
+    const transport = new StdioServerTransport();
     await mcpServer.connect(transport);
-    await transport.handleRequest(req, res, req.body);
-});
-app.get("/", (req, res) => {
-    res.send("Welcome to the MCP Server");
-});
-app.listen(4006, () => {
-    console.log("MCP Server is running on http://localhost:4006/mcp");
+    console.error("MCP Server running on stdio");
+}
+main().catch((error) => {
+    console.error("Fatal error in main():", error);
+    process.exit(1);
 });

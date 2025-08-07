@@ -1,22 +1,20 @@
-import express from "express";
-import bodyParser, { json } from "body-parser";
 
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js"
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod";
-import { version } from "os";
-// import router from "./router/router.js";
 import fetchAllMarksFunction from "./functions/readFunctions/fetchAllMarksFuction.js";
 import { Marks_Read_Response_Format } from "./formats/readFornat/marksReadFormat.js";
 import MarksJsonToStringConverter from "./formatters/readConvertor/MarksJsonToStringConverter.js";
 import fetchOneMarkFunction from "./functions/readFunctions/fetchOneMarkFunction.js";
-import fetchMarksInARangeFormatter from "./formatters/readFormatters/fetchMarksInARangeFormatter.js";
 import fetchMarksInARangeFunction from "./functions/readFunctions/fetchMarksInARangeFunction.js";
-// import { connectSlave } from "./dbConnection/connector_slave";
-
-
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import express from "express";
+import cors from "cors";
+import { Request, Response } from "express";
+import { tr } from "zod/v4/locales";
+import router from "./router/router.js";
 const mcpServer = new McpServer({
-  name: "Marks_table_server",
+  name: "Marks_table_server_2",
   version: "1.0.0",
   capabilities:{
     resources:{},
@@ -130,13 +128,28 @@ mcpServer.tool(
 );
 
 
-async function main() {
-  const transport = new StdioServerTransport();
-  await mcpServer.connect(transport);
-  console.error("MCP Server running on stdio");
-}
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(router)
 
-main().catch((error) => {
-  console.error("Fatal error in main():", error);
-  process.exit(1);
+
+app.post("/mcp", async (req: Request, res: Response) => {
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator : undefined
+  });
+  res.on("close", () => {
+    transport.close();
+  });
+  await mcpServer.connect(transport);
+  await transport.handleRequest(req, res , req.body);
+})
+
+app.get("/", (req: Request, res: Response) => {
+  res.send("Welcome to the MCP Server");
+});
+
+app.listen(4006, () => {
+  console.log("MCP Server is running on http://localhost:4006/mcp");
 });

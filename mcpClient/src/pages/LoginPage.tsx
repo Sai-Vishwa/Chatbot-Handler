@@ -4,7 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Moon, Sun } from 'lucide-react';
-import Cookie from 'js-cookie';
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
+import { toast, Toaster } from 'sonner';
 
 // TypeScript interfaces
 interface LoginCredentials {
@@ -184,6 +186,7 @@ const LoginPage: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [theme, toggleTheme] = useTheme();
+  const nav = useNavigate();
 
   const handleInputChange = (field: keyof LoginCredentials) => (value: string): void => {
     setCredentials(prev => ({ ...prev, [field]: value }));
@@ -201,11 +204,19 @@ const LoginPage: React.FC = () => {
           body: JSON.stringify({uname: credentials.username, password: credentials.password}),    
         });
         const data = await res.json();
-        if(data.msg){
-          
+        console.log(JSON.stringify(data))
+
+        if(data.err){
+          toast.error(data.err);
         }
-    } catch (error) {
-      console.error('Login failed:', error);
+        else{
+          Cookies.set("session", data.session, { expires: 7 });
+          nav("/view-tools");
+        }
+    } catch (error : any) {
+      alert(error)
+      console.log( JSON.stringify(error))
+      toast.error('Login failed:');
     } finally {
       setIsLoading(false);
     }
@@ -220,7 +231,7 @@ const LoginPage: React.FC = () => {
         onToggle={toggleTheme} 
         buttonStyles={theme.buttonHover} 
       />
-
+      <Toaster />
       <BackgroundAnimation isDark={theme.isDark} />
 
       <Card className={`w-full max-w-md relative z-10 transition-all duration-500 hover:shadow-2xl transform hover:-translate-y-1 ${theme.cardBackground}`}>
