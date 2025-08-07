@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Moon, Sun, Plus, Settings, Shield, Unlock, Lock } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Moon, Sun, Plus, Settings, Shield, Unlock, Lock, Search, Filter } from 'lucide-react';
 import Cookies from 'js-cookie';
-import { toast } from 'sonner';
-// import { data } from 'react-router-dom';
+import { toast, Toaster } from 'sonner';
 
 // TypeScript interfaces
 interface Tool {
@@ -17,10 +18,8 @@ interface Tool {
 }
 
 interface BackendResponse {
-  msg?: string;
-  available_tools?: Tool[];
-  unavailable_tools?: Tool[];
-  err?: string;
+  available_tools: Tool[];
+  unavailable_tools: Tool[];
 }
 
 interface Theme {
@@ -35,7 +34,22 @@ interface ToolCardProps {
 }
 
 // Mock backend response
-
+const mockBackendData: BackendResponse = {
+  available_tools: [
+    { id: '1', name: 'fetch_marks_of_all_students', description: 'Retrieve academic records for all enrolled students' },
+    { id: '2', name: 'create_a_student', description: 'Add new student to the system' },
+    { id: '3', name: 'delete_student_record', description: 'Remove student data from database' },
+    { id: '4', name: 'send_notification_to_parents', description: 'Send automated messages to parent contacts' },
+    { id: '5', name: 'export_student_data', description: 'Generate downloadable student reports' },
+  ],
+  unavailable_tools: [
+    { id: '6', name: 'update_student_details', description: 'Modify existing student information' },
+    { id: '7', name: 'generate_report_card', description: 'Create comprehensive academic reports' },
+    { id: '8', name: 'calculate_grade_averages', description: 'Compute statistical grade analysis' },
+    { id: '9', name: 'backup_database', description: 'Create system backup copies' },
+    { id: '10', name: 'schedule_exam_reminder', description: 'Automate examination notifications' },
+  ]
+};
 
 // Custom hook for theme management
 const useTheme = (): [Theme, () => void] => {
@@ -49,8 +63,6 @@ const useTheme = (): [Theme, () => void] => {
 
   return [theme, toggleTheme];
 };
-
-
 
 // Tool card component
 const ToolCard: React.FC<ToolCardProps> = ({ tool, isAvailable, theme, onAddTool }) => {
@@ -153,15 +165,13 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, count, icon, description }
 
 // Main tools page component
 const ToolsPage: React.FC = () => {
-  const [backendData, setBackendData] = useState<BackendResponse>({
-    available_tools: [],
-    unavailable_tools: [],
-    msg: ""
-  });
+  const [backendData, setBackendData] = useState<BackendResponse>(mockBackendData);
   const [theme, toggleTheme] = useTheme();
   const [isCreatingServer, setIsCreatingServer] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>("available");
-  const session = Cookies.get("session");
+  const [activeTab, setActiveTab] = useState<string>("search");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const session = Cookies.get('session');
 
   // Simulate loading data from backend
   useEffect(() => {
@@ -193,6 +203,37 @@ const ToolsPage: React.FC = () => {
     loadData();
   }, []);
 
+  // Combine all tools for search
+  const allTools = useMemo(() => {
+    const availableWithStatus = backendData.available_tools.map(tool => ({ ...tool, isAvailable: true }));
+    const restrictedWithStatus = backendData.unavailable_tools.map(tool => ({ ...tool, isAvailable: false }));
+    return [...availableWithStatus, ...restrictedWithStatus];
+  }, [backendData]);
+
+  // Filter and search tools
+  const filteredTools = useMemo(() => {
+    let filtered = allTools;
+
+    // Apply status filter
+    if (statusFilter === "available") {
+      filtered = filtered.filter(tool => tool.isAvailable);
+    } else if (statusFilter === "restricted") {
+      filtered = filtered.filter(tool => !tool.isAvailable);
+    }
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(tool => 
+        tool.name.toLowerCase().includes(query) ||
+        (tool.description && tool.description.toLowerCase().includes(query)) ||
+        (tool.isAvailable ? "available" : "restricted").includes(query)
+      );
+    }
+
+    return filtered;
+  }, [allTools, searchQuery, statusFilter]);
+
   const handleAddTool = (toolId: string): void => {
     console.log(`Tool ${toolId} added successfully!`);
     // Here you would typically make an API call to add the tool
@@ -216,6 +257,7 @@ const ToolsPage: React.FC = () => {
         ? 'dark bg-gray-900' 
         : 'bg-gray-50'
     }`}>
+        <Toaster />
       <div className="bg-background text-foreground min-h-screen">
         {/* Header */}
         <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -292,8 +334,12 @@ const ToolsPage: React.FC = () => {
 
             {/* Tools Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="flex justify-center mb-8">
-                <TabsList className="grid grid-cols-2 max-w-[400px] w-full">
+              {/* <div className="flex justify-center mb-8">
+                <TabsList className="grid grid-cols-3 max-w-[600px] w-full">
+                  <TabsTrigger value="search" className="flex items-center gap-2">
+                    <Search className="h-4 w-4" />
+                    All Tools ({totalTools})
+                  </TabsTrigger>
                   <TabsTrigger value="available" className="flex items-center gap-2">
                     <Unlock className="h-4 w-4" />
                     Available ({backendData.available_tools.length})
@@ -303,7 +349,98 @@ const ToolsPage: React.FC = () => {
                     Restricted ({backendData.unavailable_tools.length})
                   </TabsTrigger>
                 </TabsList>
-              </div>
+              </div> */}
+
+              <TabsContent value="search" className="mt-8">
+                <div className="mb-8 text-center">
+                  <h3 className="text-2xl font-semibold mb-2">All Tools</h3>
+                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                    Search and filter through all available and restricted tools.
+                  </p>
+                </div>
+
+                {/* Search and Filter Controls */}
+                <div className="max-w-2xl mx-auto mb-8">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search tools by name, description, or status..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-muted-foreground" />
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="available">Available</SelectItem>
+                          <SelectItem value="restricted">Restricted</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Search Results */}
+                {filteredTools.length === 0 ? (
+                  <div className="max-w-md mx-auto">
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-16">
+                        <Search className="h-16 w-16 text-muted-foreground mb-6" />
+                        <h3 className="text-xl font-semibold mb-3">No Tools Found</h3>
+                        <p className="text-sm text-muted-foreground text-center">
+                          {searchQuery.trim() || statusFilter !== "all"
+                            ? "Try adjusting your search terms or filters."
+                            : "No tools are currently available in the system."}
+                        </p>
+                        {(searchQuery.trim() || statusFilter !== "all") && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="mt-4"
+                            onClick={() => {
+                              setSearchQuery("");
+                              setStatusFilter("all");
+                            }}
+                          >
+                            Clear Filters
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-center mb-6">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {filteredTools.length} of {totalTools} tools
+                        {searchQuery.trim() && (
+                          <span className="ml-1">
+                            for "<span className="font-medium">{searchQuery}</span>"
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                      {filteredTools.map((tool) => (
+                        <ToolCard
+                          key={tool.id}
+                          tool={tool}
+                          isAvailable={tool.isAvailable}
+                          theme={theme}
+                          onAddTool={handleAddTool}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </TabsContent>
 
               <TabsContent value="available" className="mt-8">
                 <div className="mb-8 text-center">
