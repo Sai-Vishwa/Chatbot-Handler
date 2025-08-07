@@ -7,7 +7,7 @@ async function fetchAllMarksFunction<T>(): Promise<Marks_Read_Response_Format>{
   try {
       const connectionSlave = await connectSlave();
 
-      const [results] = await connectionSlave.query(`SELECT * FROM marks`);
+      const [results] = await connectionSlave.query(`SELECT m.uname , m.marks , a.name FROM marks m , auth a WHERE m.uname = a.uname`);
 
 
       const respone : Marks_Read_Response_Format = fetchMarksInARangeFormatter(false , "" , results as Mark[]);

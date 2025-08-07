@@ -14,7 +14,7 @@ async function fetchOneMarkFunction<T>(roll_no : any): Promise<Marks_Read_Respon
         return resp as Marks_Read_Response_Format;
       }
 
-      const [results] = await connectionSlave.query(`SELECT * FROM marks where rno = ?`,[roll_no]);
+      const [results] = await connectionSlave.query(`SELECT m.marks , m.uname , a.name FROM marks m auth a where uname = ? and a.uname=m.uname`,[roll_no]);
 
       const respone : Marks_Read_Response_Format = fetchMarksInARangeFormatter(false , "" , results as Mark[]);
       

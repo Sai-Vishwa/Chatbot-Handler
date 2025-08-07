@@ -22,7 +22,7 @@ async function fetchMarksInARangeFunction<T>(start: any, end: any): Promise<Mark
 
      
 
-      const [results] = await connectionSlave.query(`SELECT * FROM marks where marks >= ? and marks <= ?`,[start,end]);
+      const [results] = await connectionSlave.query(`SELECT m.uname , m.marks , a.name FROM marks m , auth a where marks >= ? and marks <= ? and m.uname = a.uname`,[start,end]);
 
 
       const respone : Marks_Read_Response_Format = fetchMarksInARangeFormatter(false , "" , results as Mark[]);
