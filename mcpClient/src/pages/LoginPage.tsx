@@ -214,7 +214,7 @@ const LoginPage: React.FC = () => {
           nav("/view-tools");
         }
     } catch (error : any) {
-      alert(error)
+      // alert(error)
       console.log( JSON.stringify(error))
       toast.error('Login failed:');
     } finally {

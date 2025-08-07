@@ -32,7 +32,8 @@ async function seedDB() {
   await connection.query(`
     CREATE TABLE tools (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(100) NOT NULL
+      name VARCHAR(100) NOT NULL,
+      description VARCHAR(255) DEFAULT NULL
     )
   `);
 
@@ -67,17 +68,18 @@ async function seedDB() {
     ('Principal1' , 'PrPrincipal1' , 'LeoDass' , 'principal')
   `);
 
-  await connection.query(`
-    INSERT INTO tools (name) VALUES
-    ('Fetch_All_Marks'),
-    ('Fetch_One_Mark'),
-    ('Fetch_Marks_In_A_Range'),
-    ('Create_A_Student'),
-    ('Delete_A_Student'),
-    ('Update_Student_Mark'),
-    ('Create_A_Teacher'),
-    ('Delete_A_Teacher')
-  `);
+    await connection.query(`
+  INSERT INTO tools (name, description) VALUES
+  ('Fetch_All_Marks', 'Fetches the marks of all students from the database'),
+  ('Fetch_One_Mark', 'Fetches the mark of a specific student based on their ID'),
+  ('Fetch_Marks_In_A_Range', 'Fetches marks of students that fall within a specified range'),
+  ('Create_A_Student', 'Creates a new student entry in the database'),
+  ('Delete_A_Student', 'Deletes a student from the database using their ID'),
+  ('Update_Student_Mark', 'Updates the mark of an existing student'),
+  ('Create_A_Teacher', 'Creates a new teacher entry in the database'),
+  ('Delete_A_Teacher', 'Deletes a teacher from the database using their ID')
+`);
+
 
   // Seed access table
   await connection.query(`

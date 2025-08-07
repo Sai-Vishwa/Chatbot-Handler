@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Moon, Sun, Plus, Settings, Shield, Unlock, Lock } from 'lucide-react';
+import Cookies from 'js-cookie';
+import { toast } from 'sonner';
 
 // TypeScript interfaces
 interface Tool {
@@ -59,6 +61,8 @@ const useTheme = (): [Theme, () => void] => {
 
   return [theme, toggleTheme];
 };
+
+
 
 // Tool card component
 const ToolCard: React.FC<ToolCardProps> = ({ tool, isAvailable, theme, onAddTool }) => {
@@ -165,12 +169,35 @@ const ToolsPage: React.FC = () => {
   const [theme, toggleTheme] = useTheme();
   const [isCreatingServer, setIsCreatingServer] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("available");
+  const session = Cookies.get("session");
 
   // Simulate loading data from backend
   useEffect(() => {
-    // Simulate API call
     const loadData = async () => {
-      // In real app, this would be: const response = await fetch('/api/tools');
+
+
+     try {
+      // Simulate API call
+      const res = await fetch(`http://localhost:4006/fetch-tools`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({session : session}),    
+        });
+        const data = await res.json();
+        // console.log(JSON.stringify(data))
+
+        if(data.err){
+          toast.error(data.err);
+        }
+        else{
+
+          setBackendData(data);}
+    } catch (error : any) {
+      alert(error)
+      console.log( JSON.stringify(error))
+    } 
       setBackendData(mockBackendData);
     };
     loadData();
