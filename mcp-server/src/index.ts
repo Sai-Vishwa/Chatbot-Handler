@@ -7,14 +7,7 @@ import { Request, Response } from "express";
 import router from "./router/router.js";
 
 
-const mcpServer = new McpServer({
-  name: "Marks_table_server_2",
-  version: "1.0.0",
-  capabilities:{
-    resources:{},
-    tools:{}
-  }
-})  
+
 
 
 
@@ -25,7 +18,14 @@ app.use(cors());
 app.use(router)
 
 
-
+// const mcpServer = new McpServer({
+//   name: "Marks_table_server_2",
+//   version: "1.0.0",
+//   capabilities:{
+//     resources:{},
+//     tools:{}
+//   }
+// })  
 // app.post("/mcp", async (req: Request, res: Response) => {
 //   const transport = new StreamableHTTPServerTransport({
 //     sessionIdGenerator : undefined

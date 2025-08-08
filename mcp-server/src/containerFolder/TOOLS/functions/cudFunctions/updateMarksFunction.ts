@@ -1,4 +1,4 @@
-import { connectMaster } from "../../../dbConnection/connector_master.js";
+import { connectMaster } from "../../../../dbConnection/connector_master.js";
 import { updateMarksInputFormat, updateMarksResponseFormat } from "../../formats/cudFormat/updateMarksFormat.js";
 import updateMarksFormatter from "../../formatters/cudFormatters/updateMarksFormatter.js";
 

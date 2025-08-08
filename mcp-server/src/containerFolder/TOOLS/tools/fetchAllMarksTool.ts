@@ -7,8 +7,8 @@ import MarksJsonToStringConverter from "../formatters/readConvertor/MarksJsonToS
 const fetchAllMarksTool : toolsFormat = {
     name:   "fetch_All_Marks", 
     description:   "Returns marks of all the students",
-    paramsSchemaOrAnnotations: z.object({}).optional().describe("this is completely optional"),
-    handler: async({}) => {
+    paramsSchemaOrAnnotations: {},
+    handler: async() => {
     const resp : Marks_Read_Response_Format = await fetchAllMarksFunction();
 
     if(resp.isErrorResponse){

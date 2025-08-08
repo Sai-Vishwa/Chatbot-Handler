@@ -1,4 +1,4 @@
-import { connectMaster } from "../../../dbConnection/connector_master.js";
+import { connectMaster } from "../../../../dbConnection/connector_master.js";
 import { deleteTeacherInputFormat, deleteTeacherResponseFormat } from "../../formats/cudFormat/deleteTeacherFormat.js";
 import deleteTeacherFormatter from "../../formatters/cudFormatters/deleteTeacherFormatter.js";
 

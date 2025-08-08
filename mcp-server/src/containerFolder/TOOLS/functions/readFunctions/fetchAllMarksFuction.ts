@@ -1,4 +1,4 @@
-import { connectSlave } from "../../../dbConnection/connector_slave.js";
+import { connectSlave } from "../../../../dbConnection/connector_slave.js";
 import  { Marks_Read_Response_Format,Mark } from "../../formats/readFornat/marksReadFormat.js";
 import fetchMarksInARangeFormatter from "../../formatters/readFormatters/fetchMarksInARangeFormatter.js";
 
