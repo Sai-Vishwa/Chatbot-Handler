@@ -6,12 +6,12 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { version } from "os";
 // import router from "./router/router.js";
-import fetchAllMarksFunction from "./functions/readFunctions/fetchAllMarksFuction.js";
-import { Marks_Read_Response_Format } from "./formats/readFornat/marksReadFormat.js";
-import MarksJsonToStringConverter from "./formatters/readConvertor/MarksJsonToStringConverter.js";
-import fetchOneMarkFunction from "./functions/readFunctions/fetchOneMarkFunction.js";
-import fetchMarksInARangeFormatter from "./formatters/readFormatters/fetchMarksInARangeFormatter.js";
-import fetchMarksInARangeFunction from "./functions/readFunctions/fetchMarksInARangeFunction.js";
+import fetchAllMarksFunction from "./TOOLS/functions/readFunctions/fetchAllMarksFuction.js";
+import { Marks_Read_Response_Format } from "./TOOLS/formats/readFornat/marksReadFormat.js";
+import MarksJsonToStringConverter from "./TOOLS/formatters/readConvertor/MarksJsonToStringConverter.js";
+import fetchOneMarkFunction from "./TOOLS/functions/readFunctions/fetchOneMarkFunction.js";
+import fetchMarksInARangeFormatter from "./TOOLS/formatters/readFormatters/fetchMarksInARangeFormatter.js";
+import fetchMarksInARangeFunction from "./TOOLS/functions/readFunctions/fetchMarksInARangeFunction.js";
 // import { connectSlave } from "./dbConnection/connector_slave";
 
 
