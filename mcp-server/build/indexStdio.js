@@ -2,10 +2,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 // import router from "./router/router.js";
-import fetchAllMarksFunction from "./functions/readFunctions/fetchAllMarksFuction.js";
-import MarksJsonToStringConverter from "./formatters/readConvertor/MarksJsonToStringConverter.js";
-import fetchOneMarkFunction from "./functions/readFunctions/fetchOneMarkFunction.js";
-import fetchMarksInARangeFunction from "./functions/readFunctions/fetchMarksInARangeFunction.js";
+import fetchAllMarksFunction from "./containerFolder/TOOLS/functions/readFunctions/fetchAllMarksFuction.js";
+import MarksJsonToStringConverter from "./containerFolder/TOOLS/formatters/readConvertor/MarksJsonToStringConverter.js";
+import fetchOneMarkFunction from "./containerFolder/TOOLS/functions/readFunctions/fetchOneMarkFunction.js";
+import fetchMarksInARangeFunction from "./containerFolder/TOOLS/functions/readFunctions/fetchMarksInARangeFunction.js";
 // import { connectSlave } from "./dbConnection/connector_slave";
 const mcpServer = new McpServer({
     name: "Marks_table_server",

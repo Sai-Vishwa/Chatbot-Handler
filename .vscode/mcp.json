@@ -1,16 +1,5 @@
 {
 	"servers": {
-		"my-mcp-server-e6e6bb7a": {
-			"type": "stdio",
-			"command": "node",
-			"args": [
-				"~/Desktop/Chatbot-Handler/mcp-server/build/index.js"
-			]
-		},
-		"my-mcp-server-0f12e5da": {
-			"url": "http://localhost:4006/mcp",
-			"type": "http"
-		}
 	},
 	"inputs": []
 }
